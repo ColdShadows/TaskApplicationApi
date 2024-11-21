@@ -1,8 +1,8 @@
 ﻿using TaskApplicationApi.Models;
 
-namespace TaskApplicationApi.Services
+namespace TaskApplicationApi.Repositories
 {
-    public interface IUserTasksService
+    public interface IUserTasksRepository
     {
         public Task<UserTask> Create(UserTask userTask);
 

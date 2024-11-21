@@ -1,7 +1,10 @@
-﻿namespace TaskApplicationApi.Models
+﻿using Newtonsoft.Json;
+
+namespace TaskApplicationApi.Models
 {
     public class UserTask
     {
+        [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
 
         public string UserId { get; set; }
@@ -15,5 +18,7 @@
         public DateTime? DueDate { get; set; }
 
         public DateTime? CompletionDate { get; set; }
+
+        public bool IsDeleted { get; set; }
     }
 }
