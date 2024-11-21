@@ -21,6 +21,7 @@ namespace TaskApplicationApi.Repositories
 
         public async Task<UserTask> Create(UserTask userTask)
         {
+            userTask.Id = Guid.NewGuid().ToString();
             var userTaskCreateResponse = await _userTasksContainer.CreateItemAsync(userTask);
 
             return userTaskCreateResponse.Resource;

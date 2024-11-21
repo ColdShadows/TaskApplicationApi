@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TaskApplicationApi.Models;
 using TaskApplicationApi.Services;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -29,8 +30,11 @@ namespace TaskApplicationApi.Controllers
         }
 
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<ActionResult<UserTask>> Post([FromBody] UserTask userTask)
         {
+            var createdUserTask = await _userTaskService.Create(userTask);
+
+            return base.CreatedAtAction(nameof(Get), new { id = createdUserTask.Id }, createdUserTask);
         }
 
         [HttpPut("{id}")]

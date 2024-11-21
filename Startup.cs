@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Cosmos;
 using TaskApplicationApi.Clients;
+using TaskApplicationApi.Repositories;
 using TaskApplicationApi.Services;
 
 namespace TaskApplicationApi
@@ -15,10 +16,14 @@ namespace TaskApplicationApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers(options => 
+            {
+                options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+            });
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
             services.AddTransient<IUserTasksService, UserTasksService>();
+            services.AddTransient<IUserTasksRepository, AzureCosmosUserTasksRepository>();
 
             ConfigureAzureCosmosDb(services);
         }

@@ -1,7 +1,4 @@
-using Microsoft.Azure.Cosmos;
 using TaskApplicationApi;
-using TaskApplicationApi.Models;
-using TaskApplicationApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
@@ -17,5 +14,6 @@ startup.ConfigureServices(builder.Services);
 var app = builder.Build();
 
 app.MapControllers();
+startup.Configure(app, builder.Environment);
 
 app.Run();
