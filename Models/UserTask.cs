@@ -4,12 +4,13 @@ namespace TaskApplicationApi.Models
 {
     public class UserTask
     {
-        [JsonProperty(PropertyName = "id")]
+        [JsonProperty("id")]
         public string Id { get; set; }
 
-        public string Description { get; set; }
-
+        [JsonProperty("userid")]
         public string UserId { get; set; }
+
+        public string Description { get; set; }
 
         public string ParentId { get; set; }
 

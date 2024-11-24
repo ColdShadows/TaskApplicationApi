@@ -4,14 +4,14 @@ namespace TaskApplicationApi.Services
 {
     public interface IUserTasksService
     {
-        public Task<UserTask> Create(UserTask userTask);
+        public Task<UserTask> Create(string userId, UserTask userTask);
 
         public Task<IList<UserTask>> GetListForUser(string userId);
 
-        public Task<UserTask> GetById(string id);
+        public Task<UserTask> GetById(string userId, string id);
 
-        public Task<UserTask> Update(string id, UserTask updatedUserTask);
+        public Task<UserTask> Update(string userId, UserTask updatedUserTask);
 
-        public Task Delete(string id);
+        public Task Delete(string userId, string id);
     }
 }

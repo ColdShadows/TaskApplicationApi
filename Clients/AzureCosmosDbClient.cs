@@ -20,9 +20,9 @@ namespace TaskApplicationApi.Clients
 
         private void InitializeContainers()
         {
-            Container exampleContainer = _cosmosDb.CreateContainerIfNotExistsAsync(AzureCosmosDbContainers.UserTasksContainer.Name, AzureCosmosDbContainers.UserTasksContainer.ParticionKeyPath).GetAwaiter().GetResult();
+            Container userTasksContainer = _cosmosDb.CreateContainerIfNotExistsAsync(AzureCosmosDbContainers.UserTasksContainer.Name, AzureCosmosDbContainers.UserTasksContainer.PartitionKeyPath).GetAwaiter().GetResult();
 
-            _containers.Add(AzureCosmosDbContainers.UserTasksContainer.Name, exampleContainer);
+            _containers.Add(AzureCosmosDbContainers.UserTasksContainer.Name, userTasksContainer);
         }
 
         public Container GetContainer(string containerName)

@@ -2,6 +2,6 @@
 {
     public static class AzureCosmosDbContainers
     {
-        public static readonly (string Name, string ParticionKeyPath) UserTasksContainer = ("UserTasks", "/usertasks");
+        public static readonly (string Name, string PartitionKeyPath) UserTasksContainer = ("UserTasks", "/userid");
     }
 }

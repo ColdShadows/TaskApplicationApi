@@ -2,8 +2,6 @@
 using TaskApplicationApi.Models;
 using TaskApplicationApi.Services;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace TaskApplicationApi.Controllers
 {
     [Route("api/[controller]")]
@@ -18,33 +16,49 @@ namespace TaskApplicationApi.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<ActionResult<IList<UserTask>>> Get()
         {
-            return new string[] { "value1", "value2" };
+            //TODO: Retrieve and use user id from token
+            var userTasksForUser = await _userTaskService.GetListForUser("userId");
+
+            return base.Ok(userTasksForUser);
         }
 
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<ActionResult<UserTask>> Get(string id)
         {
-            return "value";
+            //TODO: Retrieve and use user id from token
+            //TODO: Verify resource belongs to user
+            var userTaskById = await _userTaskService.GetById("userId", id);
+
+            return base.Ok(userTaskById);
         }
 
         [HttpPost]
         public async Task<ActionResult<UserTask>> Post([FromBody] UserTask userTask)
         {
-            var createdUserTask = await _userTaskService.Create(userTask);
+            //TODO: Retrieve and use user id from token
+            var createdUserTask = await _userTaskService.Create("userId", userTask);
 
             return base.CreatedAtAction(nameof(Get), new { id = createdUserTask.Id }, createdUserTask);
         }
 
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut()]
+        public async Task<ActionResult<UserTask>> Put([FromBody] UserTask userTask)
         {
+            //TODO: Retrieve and use user id from token
+            //TODO: Verify resource belongs to user
+            var userTasksForUser = await _userTaskService.Update("userId", userTask);
+
+            return base.Ok(userTasksForUser);
         }
 
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task Delete(string id)
         {
+            //TODO: Retrieve and use user id from token
+            //TODO: Verify resource belongs to user
+            await _userTaskService.Delete("userId", id);
         }
     }
 }

@@ -12,29 +12,29 @@ namespace TaskApplicationApi.Services
             _userTasksRepository = userTasksRepository ?? throw new ArgumentNullException(nameof(userTasksRepository));
         }
 
-        public async Task<UserTask> Create(UserTask userTask)
+        public async Task<UserTask> Create(string userId, UserTask userTask)
         {
-            return await _userTasksRepository.Create(userTask);
+            return await _userTasksRepository.Create(userId, userTask);
         }
 
-        public async Task Delete(string id)
+        public async Task Delete(string userId, string id)
         {
-            throw new NotImplementedException();
+            await _userTasksRepository.Delete(userId, id);
         }
 
-        public async Task<UserTask> GetById(string id)
+        public async Task<UserTask> GetById(string userId, string id)
         {
-            throw new NotImplementedException();
+            return await _userTasksRepository.GetById(userId, id);
         }
 
         public async Task<IList<UserTask>> GetListForUser(string userId)
         {
-            throw new NotImplementedException();
+            return await _userTasksRepository.GetListForUser(userId);
         }
 
-        public async Task<UserTask> Update(string id, UserTask updatedUserTask)
+        public async Task<UserTask> Update(string userId, UserTask updatedUserTask)
         {
-            throw new NotImplementedException();
+            return await _userTasksRepository.Update(userId, updatedUserTask);
         }
     }
 }

@@ -19,32 +19,52 @@ namespace TaskApplicationApi.Repositories
             _userTasksContainer = azureCosmosDBClient.GetContainer(AzureCosmosDbContainers.UserTasksContainer.Name);
         }
 
-        public async Task<UserTask> Create(UserTask userTask)
+        public async Task<UserTask> Create(string userId, UserTask userTask)
         {
             userTask.Id = Guid.NewGuid().ToString();
-            var userTaskCreateResponse = await _userTasksContainer.CreateItemAsync(userTask);
+            userTask.UserId = userId;
+            var userTaskCreateResponse = await _userTasksContainer.CreateItemAsync(userTask, new PartitionKey(userId));
 
             return userTaskCreateResponse.Resource;
         }
 
-        public async Task Delete(string id)
+        public async Task Delete(string userId, string id)
         {
-            throw new NotImplementedException();
+            var userTaskReadResponse = await _userTasksContainer.ReadItemAsync<UserTask>(id, new PartitionKey(userId));
+            userTaskReadResponse.Resource.IsDeleted = true;
+
+            await _userTasksContainer.UpsertItemAsync<UserTask>(userTaskReadResponse.Resource, new PartitionKey(userId));
         }
 
-        public async Task<UserTask> GetById(string id)
+        public async Task<UserTask> GetById(string userId, string id)
         {
-            throw new NotImplementedException();
+            var userTaskReadResponse = await _userTasksContainer.ReadItemAsync<UserTask>(id, new PartitionKey(userId));
+
+            return userTaskReadResponse.Resource;
         }
 
         public async Task<IList<UserTask>> GetListForUser(string userId)
         {
-            throw new NotImplementedException();
+            using FeedIterator<UserTask> userTasksByUserIdFeed = _userTasksContainer.GetItemQueryIterator<UserTask>(
+                queryText: $"SELECT * FROM UserTasks u WHERE u.IsDeleted = false", requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) }
+            );
+
+            List<UserTask> userTasksByUserId = new List<UserTask>();
+            while (userTasksByUserIdFeed.HasMoreResults)
+            {
+                var response = await userTasksByUserIdFeed.ReadNextAsync();
+                userTasksByUserId.AddRange(response.ToList());
+            }
+
+            return userTasksByUserId;
         }
 
-        public async Task<UserTask> Update(string id, UserTask updatedUserTask)
+        public async Task<UserTask> Update(string userId, UserTask updatedUserTask)
         {
-            throw new NotImplementedException();
+            updatedUserTask.UserId = userId;
+            var userTaskUpdatesResponse = await _userTasksContainer.UpsertItemAsync<UserTask>(updatedUserTask, new PartitionKey(userId));
+
+            return userTaskUpdatesResponse.Resource;
         }
     }
 }
