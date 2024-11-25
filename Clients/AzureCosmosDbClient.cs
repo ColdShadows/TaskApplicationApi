@@ -20,9 +20,27 @@ namespace TaskApplicationApi.Clients
 
         private void InitializeContainers()
         {
-            Container userTasksContainer = _cosmosDb.CreateContainerIfNotExistsAsync(AzureCosmosDbContainers.UserTasksContainer.Name, AzureCosmosDbContainers.UserTasksContainer.PartitionKeyPath).GetAwaiter().GetResult();
+            Container userTasksContainer = _cosmosDb.CreateContainerIfNotExistsAsync(
+                AzureCosmosDbContainers.UserTasksContainer.Name,
+                AzureCosmosDbContainers.UserTasksContainer.PartitionKeyPath)
+                .GetAwaiter()
+                .GetResult();
+
+            Container usersContainer = _cosmosDb.CreateContainerIfNotExistsAsync(
+                AzureCosmosDbContainers.UsersContainer.Name,
+                AzureCosmosDbContainers.UsersContainer.PartitionKeyPath)
+                .GetAwaiter()
+                .GetResult();
+
+            Container userPreferencesContainer = _cosmosDb.CreateContainerIfNotExistsAsync(
+                AzureCosmosDbContainers.UsersPreferencesContainer.Name,
+                AzureCosmosDbContainers.UsersPreferencesContainer.PartitionKeyPath)
+                .GetAwaiter()
+                .GetResult();
 
             _containers.Add(AzureCosmosDbContainers.UserTasksContainer.Name, userTasksContainer);
+            _containers.Add(AzureCosmosDbContainers.UsersContainer.Name, usersContainer);
+            _containers.Add(AzureCosmosDbContainers.UsersPreferencesContainer.Name, userPreferencesContainer);
         }
 
         public Container GetContainer(string containerName)

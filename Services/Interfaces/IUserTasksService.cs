@@ -1,6 +1,6 @@
 ﻿using TaskApplicationApi.Models;
 
-namespace TaskApplicationApi.Services
+namespace TaskApplicationApi.Services.Interfaces
 {
     public interface IUserTasksService
     {

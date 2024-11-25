@@ -1,5 +1,6 @@
 ﻿using TaskApplicationApi.Models;
-using TaskApplicationApi.Repositories;
+using TaskApplicationApi.Repositories.Interfaces;
+using TaskApplicationApi.Services.Interfaces;
 
 namespace TaskApplicationApi.Services
 {

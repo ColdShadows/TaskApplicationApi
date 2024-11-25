@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskApplicationApi.Models;
-using TaskApplicationApi.Services;
+using TaskApplicationApi.Services.Interfaces;
 
 namespace TaskApplicationApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UserTasksController : ControllerBase
     {
         private readonly IUserTasksService _userTaskService;
@@ -18,8 +21,8 @@ namespace TaskApplicationApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IList<UserTask>>> Get()
         {
-            //TODO: Retrieve and use user id from token
-            var userTasksForUser = await _userTaskService.GetListForUser("userId");
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userTasksForUser = await _userTaskService.GetListForUser(userId);
 
             return base.Ok(userTasksForUser);
         }
@@ -27,9 +30,8 @@ namespace TaskApplicationApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<UserTask>> Get(string id)
         {
-            //TODO: Retrieve and use user id from token
-            //TODO: Verify resource belongs to user
-            var userTaskById = await _userTaskService.GetById("userId", id);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userTaskById = await _userTaskService.GetById(userId, id);
 
             return base.Ok(userTaskById);
         }
@@ -37,8 +39,8 @@ namespace TaskApplicationApi.Controllers
         [HttpPost]
         public async Task<ActionResult<UserTask>> Post([FromBody] UserTask userTask)
         {
-            //TODO: Retrieve and use user id from token
-            var createdUserTask = await _userTaskService.Create("userId", userTask);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var createdUserTask = await _userTaskService.Create(userId, userTask);
 
             return base.CreatedAtAction(nameof(Get), new { id = createdUserTask.Id }, createdUserTask);
         }
@@ -46,19 +48,17 @@ namespace TaskApplicationApi.Controllers
         [HttpPut()]
         public async Task<ActionResult<UserTask>> Put([FromBody] UserTask userTask)
         {
-            //TODO: Retrieve and use user id from token
-            //TODO: Verify resource belongs to user
-            var userTasksForUser = await _userTaskService.Update("userId", userTask);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var updatedUserTask = await _userTaskService.Update(userId, userTask);
 
-            return base.Ok(userTasksForUser);
+            return base.Ok(updatedUserTask);
         }
 
         [HttpDelete("{id}")]
         public async Task Delete(string id)
         {
-            //TODO: Retrieve and use user id from token
-            //TODO: Verify resource belongs to user
-            await _userTaskService.Delete("userId", id);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            await _userTaskService.Delete(userId, id);
         }
     }
 }
