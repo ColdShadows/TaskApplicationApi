@@ -57,10 +57,10 @@ namespace TaskApplicationApi
             services.AddTransient<IUserTasksService, UserTasksService>();
             services.AddTransient<IUserTasksRepository, AzureCosmosUserTasksRepository>();
 
-            //services.AddTransient<IUserPreferencesRepository, UserTasksService>();
+            services.AddTransient<IUserPreferencesService, UserPreferencesService>();
             services.AddTransient<IUserPreferencesRepository, AzureCosmosUserPreferencesRepository>();
 
-            //services.AddTransient<IUserTasksService, UserTasksService>();
+            services.AddTransient<IUsersService, UsersService>();
             services.AddTransient<IUsersRepository, AzureCosmosUsersRepository>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -75,6 +75,11 @@ namespace TaskApplicationApi
                 });
 
             ConfigureAzureCosmosDb(services);
+
+            services.AddMvc(config =>
+            {
+                config.Filters.Add(typeof(ResponseStatusExceptionFilter));
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

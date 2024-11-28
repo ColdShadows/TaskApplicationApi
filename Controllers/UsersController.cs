@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskApplicationApi.Models;
 using TaskApplicationApi.Services.Interfaces;
@@ -7,6 +8,7 @@ namespace TaskApplicationApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUsersService _usersService;
@@ -16,38 +18,29 @@ namespace TaskApplicationApi.Controllers
             _usersService = usersService ?? throw new ArgumentNullException(nameof(usersService));
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> Get(string id)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var userById = await _usersService.GetById(id);
-
-            return base.Ok(userById);
-        }
-
         [HttpGet()]
         public async Task<ActionResult<User>> Get()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var userPreferencesById = await _usersService.GetByUserSubject(userId);
+            var userSubject = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userPreferencesById = await _usersService.GetByUserSubject(userSubject);
 
             return base.Ok(userPreferencesById);
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> Post([FromBody] User userPreferences)
+        public async Task<ActionResult<User>> Post([FromBody] User user)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var createdUserPreferences = await _usersService.Create(userId, userPreferences);
+            var userSubject = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var createdUserPreferences = await _usersService.Create(userSubject, user);
 
             return base.CreatedAtAction(nameof(Get), new { id = createdUserPreferences.Id }, createdUserPreferences);
         }
 
         [HttpPut()]
-        public async Task<ActionResult<User>> Put([FromBody] User userPreferences)
+        public async Task<ActionResult<User>> Put([FromBody] User user)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var updatedUserPreferences = await _usersService.Update(userId, userPreferences);
+            var userSubject = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var updatedUserPreferences = await _usersService.Update(userSubject, user);
 
             return base.Ok(updatedUserPreferences);
         }

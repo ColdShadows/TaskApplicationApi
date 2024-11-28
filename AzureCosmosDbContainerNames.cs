@@ -6,6 +6,6 @@
 
         public static readonly (string Name, string PartitionKeyPath) UsersPreferencesContainer = ("UserPreferences", "/userid");
 
-        public static readonly (string Name, string PartitionKeyPath) UsersContainer = ("Users", "/username");
+        public static readonly (string Name, string PartitionKeyPath) UsersContainer = ("Users", "/id");
     }
 }

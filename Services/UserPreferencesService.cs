@@ -18,11 +18,6 @@ namespace TaskApplicationApi.Services
             return await _userPreferencesRepository.Create(userSubject, UserPreferences);
         }
 
-        public async Task<UserPreferences> GetById(string userSubject, string id)
-        {
-            return await _userPreferencesRepository.GetById(userSubject, id);
-        }
-
         public async Task<UserPreferences> GetForUser(string userSubject)
         {
             return await _userPreferencesRepository.GetForUser(userSubject);

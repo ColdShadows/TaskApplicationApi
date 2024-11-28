@@ -18,9 +18,9 @@ namespace TaskApplicationApi.Services
             return await _usersRepository.Create(userId, user);
         }
 
-        public async Task<User> GetById(string id)
+        public async Task<User> GetByUserSubject(string userSubject)
         {
-            return await _usersRepository.GetById(id);
+            return await _usersRepository.GetByUserSubject(userSubject);
         }
 
         public async Task<User> Update(string userId, User updatedUser)

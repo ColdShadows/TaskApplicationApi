@@ -1,7 +1,9 @@
-﻿using TaskApplicationApi.Models;
-using Microsoft.Azure.Cosmos;
-using TaskApplicationApi.Clients;
+﻿using TaskApplicationApi.Clients;
+using TaskApplicationApi.Exceptions;
+using TaskApplicationApi.Models;
 using TaskApplicationApi.Repositories.Interfaces;
+
+using Microsoft.Azure.Cosmos;
 
 using User = TaskApplicationApi.Models.User;
 
@@ -26,7 +28,7 @@ namespace TaskApplicationApi.Repositories
         public async Task<UserTask> Create(string userSubject, UserTask userTask)
         {
             var userId = await GetUserIdByAuthentication(userSubject);
-            userTask.UserId = userSubject;
+            userTask.UserId = userId;
             userTask.Id = Guid.NewGuid().ToString();
             var userTaskCreateResponse = await _userTasksContainer.CreateItemAsync(userTask, new PartitionKey(userId));
 
@@ -35,17 +37,21 @@ namespace TaskApplicationApi.Repositories
 
         public async Task Delete(string userSubject, string id)
         {
-            var userId = await GetUserIdByAuthentication(userSubject);
-            var userTaskReadResponse = await _userTasksContainer.ReadItemAsync<UserTask>(id, new PartitionKey(userId));
-            userTaskReadResponse.Resource.IsDeleted = true;
+            var existingUserTask = await GetById(userSubject, id);
+            existingUserTask.IsDeleted = true;
 
-            await _userTasksContainer.UpsertItemAsync<UserTask>(userTaskReadResponse.Resource, new PartitionKey(userId));
+            await _userTasksContainer.UpsertItemAsync<UserTask>(existingUserTask, new PartitionKey(existingUserTask.UserId));
         }
 
         public async Task<UserTask> GetById(string userSubject, string id)
         {
             var userId = await GetUserIdByAuthentication(userSubject);
             var userTaskReadResponse = await _userTasksContainer.ReadItemAsync<UserTask>(id, new PartitionKey(userId));
+
+            if(userTaskReadResponse.Resource is null)
+            {
+                throw new ResourceNotFoundException(nameof(UserTask));
+            }
 
             return userTaskReadResponse.Resource;
         }
@@ -70,9 +76,9 @@ namespace TaskApplicationApi.Repositories
 
         public async Task<UserTask> Update(string userSubject, UserTask updatedUserTask)
         {
-            var userId = await GetUserIdByAuthentication(userSubject);
-            updatedUserTask.UserId = userId;
-            var userTaskUpdatesResponse = await _userTasksContainer.UpsertItemAsync<UserTask>(updatedUserTask, new PartitionKey(userId));
+            var existingUserTask = await GetById(userSubject, updatedUserTask.Id);
+            updatedUserTask.UserId = existingUserTask.UserId;
+            var userTaskUpdatesResponse = await _userTasksContainer.UpsertItemAsync(updatedUserTask, new PartitionKey(existingUserTask.UserId));
 
             return userTaskUpdatesResponse.Resource;
         }
@@ -81,7 +87,7 @@ namespace TaskApplicationApi.Repositories
         private async Task<string> GetUserIdByAuthentication(string userSubject)
         {
             using FeedIterator<User> usersByUserSubjectFeed = _usersContainer.GetItemQueryIterator<User>(
-                queryText: $"SELECT * FROM Users u WHERE u.username = {userSubject}", requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userSubject) }
+                queryText: $"SELECT * FROM Users u WHERE u.usersubject = '{userSubject}'"
             );
 
             List<User> usersByUserSubject = new List<User>();

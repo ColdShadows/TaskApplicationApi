@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskApplicationApi.Models;
 using TaskApplicationApi.Services.Interfaces;
@@ -8,6 +8,7 @@ namespace TaskApplicationApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UserPreferencesController : ControllerBase
     {
         private readonly IUserPreferencesService _userPreferencesService;
@@ -24,15 +25,6 @@ namespace TaskApplicationApi.Controllers
             var userPreferencesForUser = await _userPreferencesService.GetForUser(userId);
 
             return base.Ok(userPreferencesForUser);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<UserPreferences>> Get(string id)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var userPreferencesById = await _userPreferencesService.GetById(userId, id);
-
-            return base.Ok(userPreferencesById);
         }
 
         [HttpPost]

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Cosmos;
 using TaskApplicationApi.Clients;
+using TaskApplicationApi.Exceptions;
 using TaskApplicationApi.Models;
 using TaskApplicationApi.Repositories.Interfaces;
 
@@ -26,24 +27,29 @@ namespace TaskApplicationApi.Repositories
         public async Task<UserPreferences> Create(string userSubject, UserPreferences userPreference)
         {
             var userId = await GetUserIdByAuthentication(userSubject);
-            userPreference.UserId = userSubject;
+            var existingPreferences = await GetForUserOrDefault(userId);
+            if (existingPreferences is not null)
+            {
+                throw new ResourceAlreadyExistsException(nameof(User));
+            }
+
+            userPreference.UserId = userId;
             userPreference.Id = Guid.NewGuid().ToString();
             var userPreferencesCreateResponse = await _userPreferencesContainer.CreateItemAsync(userPreference, new PartitionKey(userId));
 
             return userPreferencesCreateResponse.Resource;
         }
 
-        public async Task<UserPreferences> GetById(string userSubject, string id)
-        {
-            var userId = await GetUserIdByAuthentication(userSubject);
-            var userPreferencesReadResponse = await _userPreferencesContainer.ReadItemAsync<UserPreferences>(id, new PartitionKey(userId));
-
-            return userPreferencesReadResponse.Resource;
-        }
-
         public async Task<UserPreferences> Update(string userSubject, UserPreferences updateduserPreferences)
         {
             var userId = await GetUserIdByAuthentication(userSubject);
+            var existingPreferences = await GetForUserOrDefault(userId);
+            if (existingPreferences is null)
+            {
+                throw new ResourceNotFoundException(nameof(UserPreferences));
+            }
+
+            updateduserPreferences.Id = existingPreferences.Id;
             updateduserPreferences.UserId = userId;
             var userPreferencesUpdatesResponse = await _userPreferencesContainer.UpsertItemAsync<UserPreferences>(updateduserPreferences, new PartitionKey(userId));
 
@@ -55,7 +61,7 @@ namespace TaskApplicationApi.Repositories
             var userId = await GetUserIdByAuthentication(userSubject);
 
             using FeedIterator<UserPreferences> userPreferencessByUserIdFeed = _userPreferencesContainer.GetItemQueryIterator<UserPreferences>(
-                queryText: $"SELECT * FROM userPreferencess u WHERE u.UserId = {userId}", requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) }
+                queryText: $"SELECT * FROM userPreferences", requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) }
             );
 
             List<UserPreferences> userPreferencessByUserId = new List<UserPreferences>();
@@ -63,6 +69,11 @@ namespace TaskApplicationApi.Repositories
             {
                 var response = await userPreferencessByUserIdFeed.ReadNextAsync();
                 userPreferencessByUserId.AddRange(response.ToList());
+            }
+
+            if (userPreferencessByUserId.Count < 1)
+            {
+                throw new ResourceNotFoundException(nameof(UserPreferences));
             }
 
             if (userPreferencessByUserId.Count > 1)
@@ -73,12 +84,28 @@ namespace TaskApplicationApi.Repositories
             return userPreferencessByUserId.FirstOrDefault();
         }
 
+        private async Task<UserPreferences> GetForUserOrDefault(string userId)
+        {
+            using FeedIterator<UserPreferences> userPreferencessByUserIdFeed = _userPreferencesContainer.GetItemQueryIterator<UserPreferences>(
+                queryText: $"SELECT * FROM userPreferences", requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) }
+            );
+
+            List<UserPreferences> userPreferencessByUserId = new List<UserPreferences>();
+            while (userPreferencessByUserIdFeed.HasMoreResults)
+            {
+                var response = await userPreferencessByUserIdFeed.ReadNextAsync();
+                userPreferencessByUserId.AddRange(response.ToList());
+            }
+
+            return userPreferencessByUserId.FirstOrDefault();
+        }
+
 
         //TODO: Move this to a better shared spot
         private async Task<string> GetUserIdByAuthentication(string userSubject)
         {
             using FeedIterator<User> usersByUserSubjectFeed = _usersContainer.GetItemQueryIterator<User>(
-                queryText: $"SELECT * FROM Users u WHERE u.username = {userSubject}", requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userSubject) }
+                queryText: $"SELECT * FROM Users u WHERE u.usersubject = '{userSubject}'"
             );
 
             List<User> usersByUserSubject = new List<User>();

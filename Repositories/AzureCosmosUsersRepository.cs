@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Cosmos;
 using TaskApplicationApi.Clients;
+using TaskApplicationApi.Exceptions;
 using TaskApplicationApi.Repositories.Interfaces;
 
 using User = TaskApplicationApi.Models.User;
@@ -22,6 +23,12 @@ namespace TaskApplicationApi.Repositories
 
         public async Task<User> Create(string userSubject, User user)
         {
+            var existingUser = await GetByUserSubjectOrDefault(userSubject);
+            if(existingUser is not null)
+            {
+                throw new ResourceAlreadyExistsException(nameof(User));
+            }
+
             user.Id = Guid.NewGuid().ToString();
             user.UserSubject = userSubject;
             var userCreateResponse = await _usersContainer.CreateItemAsync(user, new PartitionKey(user.Id));
@@ -29,17 +36,10 @@ namespace TaskApplicationApi.Repositories
             return userCreateResponse.Resource;
         }
 
-        public async Task<User> GetById(string userId)
-        {
-            var userTaskReadResponse = await _usersContainer.ReadItemAsync<User>(userId, new PartitionKey(userId));
-
-            return userTaskReadResponse.Resource;
-        }
-
         public async Task<User> GetByUserSubject(string userSubject)
         {
             using FeedIterator<User> usersByUserSubjectFeed = _usersContainer.GetItemQueryIterator<User>(
-                queryText: $"SELECT * FROM Users u WHERE u.username = {userSubject}", requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userSubject) }
+                queryText: $"SELECT * FROM Users u WHERE u.usersubject = '{userSubject}'"
             );
 
             List<User> usersByUserSubject = new List<User>();
@@ -49,7 +49,12 @@ namespace TaskApplicationApi.Repositories
                 usersByUserSubject.AddRange(response.ToList());
             }
 
-            if (usersByUserSubject.Count != 1)
+            if (usersByUserSubject.Count < 1)
+            {
+                throw new ResourceNotFoundException(nameof(User));
+            }
+
+            if (usersByUserSubject.Count > 1)
             {
                 throw new InvalidOperationException($"Expected to find 1 user with subject {userSubject}, but found {usersByUserSubject.Count}");
             }
@@ -57,11 +62,32 @@ namespace TaskApplicationApi.Repositories
             return usersByUserSubject.First();
         }
 
-        public async Task<User> Update(string userId, User updatedUser)
+        public async Task<User> Update(string userSubject, User updatedUser)
         {
-            var userTaskUpdatesResponse = await _usersContainer.UpsertItemAsync<User>(updatedUser, new PartitionKey(userId));
+            var user = await GetByUserSubject(userSubject);
+            //TODO: consider having a separate input object without these Ids, and then map properties instead
+            updatedUser.Id = user.Id;
+            updatedUser.UserSubject = user.UserSubject;
+            var userTaskUpdatesResponse = await _usersContainer.UpsertItemAsync<User>(updatedUser, new PartitionKey(user.Id));
+
 
             return userTaskUpdatesResponse.Resource;
         }
+
+        private async Task<User> GetByUserSubjectOrDefault(string userSubject)
+        {
+            using FeedIterator<User> usersByUserSubjectFeed = _usersContainer.GetItemQueryIterator<User>(
+                queryText: $"SELECT * FROM Users u WHERE u.usersubject = '{userSubject}'"
+            );
+
+            List<User> usersByUserSubject = new List<User>();
+            while (usersByUserSubjectFeed.HasMoreResults)
+            {
+                var response = await usersByUserSubjectFeed.ReadNextAsync();
+                usersByUserSubject.AddRange(response.ToList());
+            }
+
+            return usersByUserSubject.FirstOrDefault();
+        }        
     }
 }
