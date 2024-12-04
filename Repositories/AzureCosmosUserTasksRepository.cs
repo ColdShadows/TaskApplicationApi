@@ -74,9 +74,9 @@ namespace TaskApplicationApi.Repositories
             return userTasksByUserId;
         }
 
-        public async Task<UserTask> Update(string userSubject, UserTask updatedUserTask)
+        public async Task<UserTask> Update(string userTaskId, string userSubject, UserTask updatedUserTask)
         {
-            var existingUserTask = await GetById(userSubject, updatedUserTask.Id);
+            var existingUserTask = await GetById(userSubject, userTaskId);
             updatedUserTask.UserId = existingUserTask.UserId;
             var userTaskUpdatesResponse = await _userTasksContainer.UpsertItemAsync(updatedUserTask, new PartitionKey(existingUserTask.UserId));
 
@@ -99,7 +99,7 @@ namespace TaskApplicationApi.Repositories
 
             if (usersByUserSubject.Count != 1)
             {
-                throw new InvalidOperationException($"Expected to find 1 user with subject {userSubject}, but found {usersByUserSubject.Count}");
+                throw new ResourceNotFoundException(nameof(User));
             }
 
             return usersByUserSubject.First().Id;

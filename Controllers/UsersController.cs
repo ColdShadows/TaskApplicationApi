@@ -33,7 +33,7 @@ namespace TaskApplicationApi.Controllers
             var userSubject = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             var createdUserPreferences = await _usersService.Create(userSubject, user);
 
-            return base.CreatedAtAction(nameof(Get), new { id = createdUserPreferences.Id }, createdUserPreferences);
+            return base.CreatedAtAction(nameof(Get), null, createdUserPreferences);
         }
 
         [HttpPut()]

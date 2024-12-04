@@ -10,7 +10,7 @@ namespace TaskApplicationApi.Repositories.Interfaces
 
         public Task<UserTask> GetById(string userSubject, string id);
 
-        public Task<UserTask> Update(string userSubject, UserTask updatedUserTask);
+        public Task<UserTask> Update(string userTaskId, string userSubject, UserTask updatedUserTask);
 
         public Task Delete(string userSubject, string id);
     }

@@ -33,9 +33,9 @@ namespace TaskApplicationApi.Services
             return await _userTasksRepository.GetListForUser(userId);
         }
 
-        public async Task<UserTask> Update(string userId, UserTask updatedUserTask)
+        public async Task<UserTask> Update(string userTaskId, string userId, UserTask updatedUserTask)
         {
-            return await _userTasksRepository.Update(userId, updatedUserTask);
+            return await _userTasksRepository.Update(userTaskId, userId, updatedUserTask);
         }
     }
 }

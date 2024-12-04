@@ -45,11 +45,11 @@ namespace TaskApplicationApi.Controllers
             return base.CreatedAtAction(nameof(Get), new { id = createdUserTask.Id }, createdUserTask);
         }
 
-        [HttpPut()]
-        public async Task<ActionResult<UserTask>> Put([FromBody] UserTask userTask)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<UserTask>> Put(string id, [FromBody] UserTask userTask)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var updatedUserTask = await _userTaskService.Update(userId, userTask);
+            var updatedUserTask = await _userTaskService.Update(id, userId, userTask);
 
             return base.Ok(updatedUserTask);
         }

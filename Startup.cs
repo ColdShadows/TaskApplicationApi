@@ -22,6 +22,15 @@ namespace TaskApplicationApi
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("FrontEndApplication", policy =>
+                {
+                    policy.WithOrigins("http://localhost:4200")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+                });
+            });
             services.AddControllers(options =>
             {
                 options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
@@ -70,8 +79,10 @@ namespace TaskApplicationApi
                     options.Audience = Configuration.GetValue<string>("Auth0:Audience");
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        NameClaimType = ClaimTypes.NameIdentifier
+                        NameClaimType = ClaimTypes.NameIdentifier,
+                        ValidateIssuer = false
                     };
+                    options.RequireHttpsMetadata = false;
                 });
 
             ConfigureAzureCosmosDb(services);
@@ -93,6 +104,7 @@ namespace TaskApplicationApi
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseCors("FrontEndApplication");
         }
 
         private void ConfigureAzureCosmosDb(IServiceCollection services)
