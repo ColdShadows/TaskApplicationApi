@@ -36,11 +36,11 @@ namespace TaskApplicationApi.Controllers
             return base.CreatedAtAction(nameof(Get), null, createdUserPreferences);
         }
 
-        [HttpPut()]
-        public async Task<ActionResult<UserPreferences>> Put([FromBody] UserPreferences userPreferences)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<UserPreferences>> Put(string id, [FromBody] UserPreferences userPreferences)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var updatedUserPreferences = await _userPreferencesService.Update(userId, userPreferences);
+            var updatedUserPreferences = await _userPreferencesService.Update(id, userId, userPreferences);
 
             return base.Ok(updatedUserPreferences);
         }

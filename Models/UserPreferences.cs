@@ -10,8 +10,6 @@ namespace TaskApplicationApi.Models
         [JsonProperty("userid")]
         public string UserId { get; set; }
 
-        public string PreferencesJson { get; set; }
-
-        public int PreferencesVersion { get; set; }
+        public string ThemeName { get; set; }
     }
 }

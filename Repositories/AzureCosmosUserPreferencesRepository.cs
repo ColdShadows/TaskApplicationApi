@@ -40,16 +40,15 @@ namespace TaskApplicationApi.Repositories
             return userPreferencesCreateResponse.Resource;
         }
 
-        public async Task<UserPreferences> Update(string userSubject, UserPreferences updateduserPreferences)
+        public async Task<UserPreferences> Update(string id, string userSubject, UserPreferences updateduserPreferences)
         {
             var userId = await GetUserIdByAuthentication(userSubject);
             var existingPreferences = await GetForUserOrDefault(userId);
-            if (existingPreferences is null)
+            if (existingPreferences is null || !string.Equals(existingPreferences.Id, id))
             {
                 throw new ResourceNotFoundException(nameof(UserPreferences));
             }
 
-            updateduserPreferences.Id = existingPreferences.Id;
             updateduserPreferences.UserId = userId;
             var userPreferencesUpdatesResponse = await _userPreferencesContainer.UpsertItemAsync<UserPreferences>(updateduserPreferences, new PartitionKey(userId));
 

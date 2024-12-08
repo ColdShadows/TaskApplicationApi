@@ -23,9 +23,9 @@ namespace TaskApplicationApi.Services
             return await _userPreferencesRepository.GetForUser(userSubject);
         }
 
-        public async Task<UserPreferences> Update(string userSubject, UserPreferences UserPreferences)
+        public async Task<UserPreferences> Update(string id, string userSubject, UserPreferences UserPreferences)
         {
-            return await _userPreferencesRepository.Update(userSubject, UserPreferences);
+            return await _userPreferencesRepository.Update(id, userSubject, UserPreferences);
         }
     }
 }
